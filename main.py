@@ -1,30 +1,11 @@
+from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, Iterable
 
-class Vec(np.ndarray):
-    def __new__(cls, values: Optional[Tuple[float, float, float]], **kwargs):
-        obj = super().__new__(cls, shape=(3,), **kwargs)
-        obj.__init__(values, **kwargs)
-        return obj
+mu0 = 4*np.pi*1e-7
 
-    def __init__(self, values, **kwargs):
-        print(values)
-        super().__init__(**kwargs)
-        if values is not None:
-            for i in range(3): self.__setitem__(i, values[i])
-
-    def __abs__(self):
-        return np.linalg.norm(self)
-
-    def magnitude(self):
-        return abs(self)
-
-    def dir(self):
-        return self / self.magnitude()
-
-
-def cross(vec1 : Vec, vec2: Vec):
+def cross(vec1: Vec, vec2: Vec):
     n1, = np.shape(vec1); n2, = np.shape(vec2)
     assert n1 == n2 == 3
     n = n1
@@ -36,6 +17,72 @@ def cross(vec1 : Vec, vec2: Vec):
     return result
 
 
-if __name__ == "__main__":
-    vec1 = Vec((1, 2, 3)); vec2 = Vec((1, 0, 1))
-    print(cross(vec1, vec2))
+class Vec(np.ndarray):
+    def __new__(cls, values: Optional[Tuple[float, float, float]], **kwargs):
+        obj = super().__new__(cls, shape=(3,), **kwargs)
+        obj.__init__(values, **kwargs)
+        return obj
+
+    def __init__(self, values, **kwargs):
+        super().__init__(**kwargs)
+        if values is not None:
+            for i in range(3): self.__setitem__(i, values[i])
+
+    def __abs__(self):
+        return np.linalg.norm(self)
+
+    def __mod__(self, other: Vec):
+        return cross(self, other)
+
+    def magnitude(self):
+        return abs(self)
+
+    def dir(self):
+        return self / self.magnitude()
+
+
+class Dipole(Vec):
+    def A(self, position: Union[Tuple[float, float, float], Iterable]):
+        if isinstance(position, tuple):
+            r = Vec(position)
+            return mu0/(4*np.pi)*(self % r.dir()) / (abs(r)*abs(r))
+        elif hasattr(position, '__iter__'):
+            return np.array([mu0/(4*np.pi)*self/abs(r) for r in position])
+        else:
+            raise Exception("An error has occurred")
+
+    def B(self, position):
+        if isinstance(position, tuple):
+            r = Vec(position)
+            r_siz = abs(r)
+            return mu0/(4*np.pi*r_siz*r_siz*r_siz) * (3*r.dir()*np.dot(r.dir(), self) - self)
+        elif hasattr(position, '__iter__'):
+            rs = np.array(position)
+            sizes = np.apply_along_axis(np.linalg.norm, 1, rs)
+            dirs = rs/sizes[:, np.newaxis]
+            return mu0/(4*np.pi*(sizes**3)[:,np.newaxis])*(3*dirs*(dirs @ self)[:,np.newaxis] - self)
+
+
+m = Dipole((0,0,1))
+xs, ys = np.meshgrid(np.linspace(-1,1,60), np.linspace(-1,1,60))
+
+xi = Vec((1,0,0))
+eta = Vec((0,1,0))
+zeta = cross(xi, eta)
+
+spatial_xs = xs[:,:,np.newaxis]*xi
+spatial_ys = ys[:,:,np.newaxis]*eta
+rs : np.ndarray = spatial_xs + spatial_ys
+rs_sizes = np.apply_along_axis(np.linalg.norm, 2, rs)
+
+import matplotlib.pyplot as plt
+shape = np.shape(spatial_xs)
+B_vals = np.reshape(m.B(rs.reshape((-1,3))), shape)
+B_vals = np.apply_along_axis(np.linalg.norm, 2, B_vals)
+B_vals = np.where(rs_sizes > 0.1, np.log(B_vals), -15)
+
+fig, (ax,cbarax) = plt.subplots(1,2)
+cmesh = ax.pcolormesh(xs, ys, B_vals, shading='auto')
+ax.set_aspect("equal")
+plt.colorbar(cmesh, cbarax, ax)
+fig.show()
