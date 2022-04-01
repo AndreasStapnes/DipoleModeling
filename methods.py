@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from typing import Union, Optional, Tuple, Iterable, List
-
+from numba import njit
 
 mu0 = 4*np.pi*1e-7
 
@@ -111,6 +111,9 @@ class State:
     def __mul__(self, other: float):
         return State(self.position*other, self.velocity*other)
 
+    def __rmul__(self, other):
+        return self*other
+
     def __sub__(self, other: State):
         return self + other*(-1)
 
@@ -119,13 +122,16 @@ class State:
 
 
 class ChargedParticle(State):
+    position: Vec
+    velocity: Vec
     charge: float
     mass: float
     reacting_dipoles: List[Dipole]
 
-    def __init__(self, position: Vec, velocity: Vec, charge: float):
+    def __init__(self, position: Vec, velocity: Vec, charge: float, mass: float):
         super().__init__(position, velocity)
         self.charge = charge
+        self.mass = mass
         self.reacting_dipoles = []
 
     def _force_(self):
@@ -134,21 +140,34 @@ class ChargedParticle(State):
             force += self.charge * cross(self.velocity, dipole.B(self.position))
         return force
 
+    def __iadd__(self, other: State):
+        self.velocity = self.velocity + other.velocity
+        self.position = self.position + other.position
+
+    def __add__(self, other: State):
+        return ChargedParticle(self.position+other.position,
+                               self.velocity+other.velocity,
+                               self.charge,
+                               self.mass)
+
     def _changerate_(self):
         return State(self.velocity, self._force_()/self.mass)
 
-    def timestep(self, force: Vec, timestep=1e-3):
-        pass
+    def __mod__(self, timestep: float = 1e-3):
+        def cp_deriv(time: float, cp: ChargedParticle):
+            return cp._changerate_()
+        self += RK4_diff(self, cp_deriv, 0, timestep)
+        #self += self._changerate_()*timestep
 
 
 
 
-def RK4_step(pos, f, time: float,h: float):
+def RK4_diff(pos, f, time: float,h: float):
     f1 = f(time, pos)
-    f2 = f(time + h/2, pos+h/2*f1)
-    f3 = f(time + h/2, pos+h/2*f2)
-    f4 = f(time+h, pos+h*f3)
-    return pos + h/6*(f1+2*f2+2*f3+f4)
+    f2 = f(time, pos+f1*h/2)
+    f3 = f(time, pos+f2*h/2)
+    f4 = f(time, pos+f3*h)
+    return h/6*(f1+2*f2+2*f3+f4)
 
 
 
