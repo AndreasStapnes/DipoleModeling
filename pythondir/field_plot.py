@@ -5,26 +5,27 @@ from matplotlib.axes import Axes
 
 from earth import earth
 
+#one wishes to plot the B-field projection in a plane which contains the dipole.
+xi = Vec((1,0,0))       # first spanning vector of the plane
+eta = Vec((0,0,1))      # second spanning vector of the plane
+zeta = cross(xi, eta)   # normal vector of the plane
 
-xi = Vec((1,0,0))
-eta = Vec((0,0,1))
-zeta = cross(xi, eta)
+pts = 100               # amt of points in either direction of the plane one wishes to plot
 
-pts = 100
-
-view_r = 6e6
-max_B = 1e-3
+view_r = 6e6            # distance from the dipole in the xi and eta-direction one wishes to plot
+max_B = 1e-3            # the maximal B-field-strength one will allow to plot
 
 rs = spatial_span(xi, eta, -view_r, view_r, pts, -view_r, view_r, pts)
+            # meshgrid of the points for which one wants to plot B
 xs, ys = np.meshgrid(np.linspace(-view_r,view_r,pts), np.linspace(-view_r,view_r,pts))
-rs_sizes = np.apply_along_axis(np.linalg.norm, -1, rs)
+            # 2d-points in the xi-eta-basis of the relevant points to plot
+
 
 import matplotlib.pyplot as plt
 shape = np.shape(rs)[:-1]
-B_vals = earth.B(rs)
-#B_vals = np.apply_along_axis(np.linalg.norm, 2, B_vals)
-#B_vals = np.where(rs_sizes > 0.1, np.log(B_vals), -15)
-#B_vals = np.clip(B_vals, -1e-5,1e-5)
+B_vals = earth.B(rs)    #Calculate the B-field at each r-point of the plane
+
+
 B_vals_size = np.apply_along_axis(np.linalg.norm, 2, B_vals)
 B_vals_proj = project_along(B_vals, along=zeta, axis_tip=xi)
 B_vals_size = np.clip(B_vals_size, -max_B, max_B)
