@@ -2,6 +2,7 @@
 #include <array>
 #include <initializer_list>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -36,6 +37,7 @@ vec cross(const vec& a, const vec& b);
 ostream& operator<<(ostream& cout, const vec& rhs);
 pair<vec, vec> operator*(pair<vec, vec> elem, double rhs);
 pair<vec, vec> operator*(double lhs, pair<vec, vec> elem);
+istream& operator>>(istream& cin, vec& rhs);
 
 class magDipole {
     public:
@@ -51,7 +53,10 @@ class magDipole {
 };
 
 struct chargedParticle {
+
     public:
+
+    vector<magDipole*> reacting_dipoles;
     vec loc;
     vec vel;
     double charge;
@@ -67,6 +72,6 @@ struct chargedParticle {
     pair<vec,vec> state();
 
     vec F(magDipole dipole);
-    pair<vec,vec> timediff(magDipole dipole);
-    void timestep(magDipole dipole, double h=1e-3);
+    pair<vec,vec> timediff();
+    void timestep(double h=1e-3);
 };

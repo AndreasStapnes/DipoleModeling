@@ -1,6 +1,7 @@
 
 
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 #include "objs.hpp"
@@ -8,14 +9,28 @@ using namespace std;
 
 
 int main() {
-    chargedParticle cp{{-2,0,0}, {2,0,0}, 1.602e-19, 1.67e-27};
-    magDipole m{{0,0,0},{10,0,0.1}};
-    double time{0.8};
-    double timestep{1e-5};
-    int writeskip{100};
+    ifstream file{};
+    file.open("in.txt");
+    float mass{}, charge{}, time{}, timestep{};
+    int writeskip{};
+    vec loc{{0,0,0}}, vel{{0,0,0}}, moment{{0,0,0}};
+    string dump;
+    file >> mass >> dump;
+    file >> charge >> dump;
+    file >> loc >> dump;
+    file >> vel >> dump; 
+    chargedParticle cp{loc, vel, charge, mass};
+    file >> loc >> dump;
+    file >> moment >> dump;
+
+    magDipole m{loc,moment};
+    cp.reacting_dipoles.push_back(&m);
+    file >> time >> dump;
+    file >> timestep >> dump;
+    file >> writeskip >> dump;
 
     for(int i = 0; i<int(time/timestep); i++) {
-        cp.timestep(m, timestep);
+        cp.timestep(timestep);
         if(i % writeskip == 0) cout << cp.loc << "\n";
     }
 
