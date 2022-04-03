@@ -1,9 +1,9 @@
 1.67e-27	    mass
 1.60e-19	    charge
-(-15e8,0,0)	    chargedParticle_Location
-(3e6,0,0)	    chargedParticle_velocity
+(-15e9,0,0)	    chargedParticle_Location
+(8e5,0,0)	    chargedParticle_velocity
 (0,0,0)		    magnetic_Dipole_location
 (-3.30e22,0,-7.53e22)	magnetic_Dipole_moment
-1e4 		    time
-3e-4		    timestep
+3e4 		    time
+3e-3		    timestep
 1000	        writeskip
