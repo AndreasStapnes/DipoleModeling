@@ -6,10 +6,11 @@ from matplotlib.axes import Axes
 from earth import earth
 
 #one wishes to plot the B-field projection in a plane which contains the dipole.
-xi = Vec((0,1,0))       # first spanning vector of the plane
+xi = Vec((1,0,0))       # first spanning vector of the plane
 eta = Vec((0,0,1))      # second spanning vector of the plane
-xi_label = r"$y$[m]"
+xi_label = r"$x$[m]"
 eta_label = r"$z[m]$"
+filename="xz_proj"
 
 zeta = cross(xi, eta)   # normal vector of the plane
 
@@ -53,3 +54,4 @@ plt.colorbar(cmesh, cbarax, ax, orientation="vertical")
 ax.set_ylabel(eta_label)
 ax.set_xlabel(xi_label)
 fig.show()
+fig.savefig(f"{filename}.pdf")

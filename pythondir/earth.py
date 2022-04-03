@@ -5,7 +5,7 @@ from methods import Dipole
 
 tilt = 23.7     #degrees
 m = -8.22e22       #A m^2
-azim = 90
+azim = 0
 
 #---------------------------------------------
 

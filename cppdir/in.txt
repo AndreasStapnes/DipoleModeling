@@ -1,6 +1,6 @@
 1.67e-27	    mass
 1.60e-19	    charge
-(-15e6,0,0)	    chargedParticle_Location
+(-15e8,0,0)	    chargedParticle_Location
 (3e6,0,0)	    chargedParticle_velocity
 (0,0,0)		    magnetic_Dipole_location
 (-3.30e22,0,-7.53e22)	magnetic_Dipole_moment
