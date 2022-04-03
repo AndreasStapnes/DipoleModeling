@@ -5,18 +5,30 @@ import matplotlib.cm as cm
 
 sublines = 40
 
+
 with open("out.txt", "r") as file:
     ax: Axes
-    vals = [[float(num) for num in line.strip("()\n").split(",")] for line in file.readlines()]
+    vals = [[[float(num) for num in elem.strip("()\n").split(",")] for elem in line.split(") (")] for line in file.readlines()]
     vals = np.array(vals)
+    positions, velocities = vals.transpose((1,0,2))
+
     N = len(vals)
     n = int(N/sublines)
     fig = plt.figure()
     ax = fig.add_subplot(111,projection="3d")
+
+    convergence_fig, convergence_ax = plt.subplots(1,1)
+
     for i in range(sublines-1):
-        ax.plot(*vals[n*i:n*(i+1)].T, color=cm.plasma(i/sublines))
-    ax.plot(*vals[n*(sublines-1):].T, color=cm.plasma(1))
-    ax.scatter(*vals[-1], color="k")
+        relevant_positions = positions[n*i:n*(i+1)]
+        ax.plot(*relevant_positions.T, color=cm.plasma(i/sublines))
+    ax.plot(*positions[n*(sublines-1):].T, color=cm.plasma(1))
+    ax.scatter(*positions[-1], color="k")
+
+    convergence_ax.plot(np.linalg.norm(velocities, axis=1))
+    convergence_fig.show();
+
+
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     zlim = ax.get_zlim()

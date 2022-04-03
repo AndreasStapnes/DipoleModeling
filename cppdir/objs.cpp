@@ -95,7 +95,7 @@ pair<vec, vec> operator*(double lhs, pair<vec, vec> elem) {
 
 istream& operator>>(istream& cin, vec& rhs) {
     char l_p, r_p, c1, c2;
-    float x,y,z;
+    double x,y,z;
     cin >> l_p >> x >> c1 >> y >> c2 >> z >> r_p;
     if(!cin || l_p != '(' || c1 != ',' || c2 != ',' || r_p != ')') {
      throw invalid_argument{"text did not match vector-format (..,..,..)"};}
