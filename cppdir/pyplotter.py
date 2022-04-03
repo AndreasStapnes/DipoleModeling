@@ -22,7 +22,7 @@ with open("out.txt", "r") as file:
     for i in range(sublines-1):
         relevant_positions = positions[n*i:n*(i+1)]
         ax.plot(*relevant_positions.T, color=cm.plasma(i/sublines))
-    ax.plot(*positions[n*(sublines-1):].T, color=cm.plasma(1))
+    ax.plot(*positions[n*(sublines-1):].T, color=cm.plasma((sublines-1)/sublines))
     ax.scatter(*positions[-1], color="k")
 
     convergence_ax.plot(np.linalg.norm(velocities, axis=1))
